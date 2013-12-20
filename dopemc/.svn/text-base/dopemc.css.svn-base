@@ -1,0 +1,182 @@
+/*body {font-family: Arial, Helvetica, Tahoma, sans-serif; font-size:14px}*/
+
+html, body {
+    font: normal 12px verdana;
+    margin: 0;
+    padding: 0;
+    border: 0 none;
+    overflow: hidden;
+    height: 100%;
+	/*background-image: url(icons/2pac.jpg);
+	background-repeat: no-repeat;*/
+	background-color: #deecfd;
+}
+
+li {
+	margin-bottom: 14px;
+}
+
+code {
+	font-size: 14px;
+}
+
+input {
+	font-size: 12px;
+	margin-top: 10px;
+	font-weight: bold;
+}
+
+#loading-mask {
+  position: absolute;
+  left:     0;
+  top:      0;
+  width:    100%;
+  height:   100%;
+  z-index:  20000;
+  background-color: white;
+}
+
+#loading {
+  position: absolute;
+  left:     50%;
+  top:      50%;
+  padding:  2px;
+  z-index:  20001;
+  height:   auto;
+  margin:   -35px 0 0 -30px;
+}
+
+#loading .loading-indicator {
+  background: url(icons/loading.gif) no-repeat;
+  color:      #555;
+  font:       bold 13px tahoma,arial,helvetica;
+  padding:    8px 42px;
+  margin:     0;
+  text-align: center;
+  height:     auto;
+}
+
+#logo {
+
+	float: left;
+	height: 112px;
+	width: 100%;
+}
+
+.x-panel-body p {
+    margin: 5px;
+}
+
+.x-column-layout-ct .x-panel {
+    margin-bottom: 5px;
+}
+
+.x-column-layout-ct .x-panel-dd-spacer {
+    margin-bottom: 5px;
+}
+
+/* Icons */
+
+.star {
+    background-image: url(icons/star.png) !important;
+}
+
+.cam {
+	background-image: url(icons/camera-web.png) !important;
+}
+
+.mic {
+    background-image: url(icons/audio-input-microphone_16.png) !important;
+}
+
+.battleroom {
+    background-image: url(icons/battleroom.png) !important;
+}
+
+.record {
+    background-image: url(icons/media-record.png) !important;
+}
+
+.playlists {
+    background-image: url(icons/playlists.png) !important;
+}
+
+.settings {
+    background-image: url(icons/settings.png) !important;
+}
+
+.internet {
+    background-image: url(icons/internet.png) !important;
+}
+
+.exit {
+    background-image: url(icons/exit.png) !important;
+}
+
+.refresh {
+    background-image: url(icons/refresh.png) !important;
+}
+
+.queue {
+    background-image: url(icons/queue.png) !important;
+}
+
+.swatch {
+    background-image: url(icons/swatch.png) !important;
+}
+
+.apply {
+    background-image: url(icons/apply.png) !important;
+}
+
+.btn-greyed {
+
+	color: #C9C9C9;
+	opacity: 0.4;
+	filter: alpha( opacity = 40 );
+}
+
+.panelHighlight {
+
+	border: 3px solid #cccccc;
+	background-color: #f0f8ff;
+	padding: 5px;
+}
+
+.chatText {
+	
+	color: #000000;
+}
+
+.bringToFront {
+	
+	z-index: 100000000;
+}
+
+.chatServerText {
+
+	color: #FF0000;
+	font-weight: bold;
+	font-style: italic;
+}
+
+.battleroomInfoPanel {
+	
+	padding-left: 25px;
+	padding-top: 25px
+}
+
+.instructions {
+	
+	padding: 15px 15px 15px 15px;
+	font-weight: bold;
+}
+
+.windowCopyright {
+
+	position: absolute;
+	margin-top: 150px;
+	margin-left: 15px;
+	font-size: 8px;
+	z-index: 100;
+}

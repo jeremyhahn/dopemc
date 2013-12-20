@@ -1,0 +1,1231 @@
+Ext.QuickTips.init();
+Ext.onReady( function() {
+
+	/** Global Ext windows */
+	var colorPalette;
+	var colorPaletteWin;
+	var votingWin;
+
+	if( !colorPalette ) {
+
+		colorPalette = new Ext.ColorPalette( { value: '000000' } ); // initial selected color black
+		colorPalette.on( 'select', function( palette, color ) {
+
+			DopeMC.user.chatColor = '#' + color;
+			if( colorPaletteWin ) colorPaletteWin.hide();
+		});
+	}
+	if( !colorPaletteWin ) {
+
+		colorPaletteWin = new Ext.Window({
+
+			id: 'ext-color-palette',
+			applyTo: 'color-palette',
+			title: 'Color Chooser',
+			width: 160,
+			height: 125,
+			resizable: false,
+			closeAction: 'hide',
+			plain: false,
+			items: [colorPalette]
+		});
+		colorPalette.render( Ext.get( 'ext-color-palette' ) );
+	}
+	if( !votingWin ) {
+
+		votingWin = new Ext.Window({
+
+			id: 'ext-voting-window',
+			applyTo: 'voting-window',
+			title: 'Vote',
+			width: 300,
+			height: 345,
+			resizable: false,
+			closeAction: 'hide',
+			plain: false,
+			layout: 'column',
+			buttons: [{
+				text: 'Vote',
+				handler: function( btn ) {
+
+					// Send votes to flash media server
+					for( var i=0; i<DopeMC.participants.length; i++ ) {
+
+						 var p = DopeMC.participants[i];
+						 var participant = Ext.getCmp( 'ext-participant-' + p.getUsername() ).participant;
+						 if( participant.hasVote )
+						 	 DopeMC.connection.call( 'addVote', null, participant.username );
+
+						 // Remove the participants panel from the voting window
+						 votingWin.remove( 'ext-participant-' + participant.username );
+
+						 // delete DopeMC.participants[i];
+					}
+
+					votingWin.hide();
+				}
+			}, {
+				text: 'No Thanks',
+				handler: function( btn ) {
+
+					votingWin.hide();
+				}
+			}]
+		});
+	}
+
+	/** DopeMC user interface */
+	DopeMC.ui = {
+
+			/**
+			 * Returns an object indicating the x, y, height, and width
+			 * properties of the specified video.
+			 * 
+			 * @param {Object} id The Ext component id that represents the video panel to inspect
+			 * @return {Object} An object with x, y, height, and width properties or false if the
+			 * 					component id could not be located.
+			 */
+			getVideoDimensionsById : function( id ) {
+	
+				var video = Ext.getCmp( id );
+				if( !video ) return false;
+	
+				var box = video.getBox();
+				return { x: box.x + 1, y: box.y + 27, height: box.height - 26, width: box.width };
+			},
+	
+			/**
+			 * Displays an Ext error dialog using DopeMC branded title text.
+			 * 
+			 * @param {Object} message The message to display in the error dialog.
+			 * @return void
+			 */
+			error : function( message ) {
+	
+				Ext.MessageBox.show({
+					   minWidth: 200,
+			           title: 'DopeMC Error',
+			           msg: message,		
+			           buttons: Ext.MessageBox.OK,
+			           icon: Ext.MessageBox.ERROR
+			    });	
+			},
+	
+			/**
+			 * Displays an Ext information dialog using DopeMC branded title text.
+			 * 
+			 * @param {Object} message The message to display in the information dialog.
+			 * @return void
+			 */
+			info : function( message ) {
+	
+				Ext.MessageBox.show({
+					   minWidth: 200,
+			           title: 'DopeMC Information',
+			           msg: message,
+			           buttons: Ext.MessageBox.OK,
+			           icon: Ext.MessageBox.INFO
+			    });	
+			},
+	
+			reset: function() {
+	
+				DopeMC.ui.battleroom.setAvatar( 'MC', 'Blank' );
+				DopeMC.ui.battleroom.setAvatar( 'DJ', 'Blank' );
+			},
+	
+			/**
+			 * Handles resizing necessary components when the main application
+			 * window gets resized.
+			 * 
+			 * @todo NEEDS REFACTORING
+			 * @return void
+			 */
+			onResize: function() {
+	return;
+				var coords1 = DopeMC.ui.getVideoDimensionsById( 'mc1Video' );
+				var coords2 = DopeMC.ui.getVideoDimensionsById( 'mc2Video' );
+				var coords3 = DopeMC.ui.getVideoDimensionsById( 'djVideo' );
+	
+				if( DopeMC.air.mc1Video ) {
+	
+					DopeMC.air.mc1Video.x = coords1.x;
+					DopeMC.air.mc1Video.y = coords1.y;
+					DopeMC.air.mc1Video.width = coords1.width;
+					DopeMC.air.mc1Video.height = coords1.height;
+				}
+	
+				if( DopeMC.air.mc2Video ) {
+	
+					DopeMC.air.mc2Video.x = coords2.x;
+					DopeMC.air.mc2Video.y = coords2.y;
+					DopeMC.air.mc2Video.width = coords2.width;
+					DopeMC.air.mc2Video.height = coords2.height;
+				}
+	
+				if( DopeMC.air.djVideo ) {
+	
+					DopeMC.air.djVideo.x = coords3.x;
+					DopeMC.air.djVideo.y = coords3.y;
+					DopeMC.air.djVideo.width = coords3.width;
+					DopeMC.air.djVideo.height = coords3.height;
+				}
+			},
+	
+			onToggleVideo : function( btn, pressed, stream, video ) {
+			},
+			onToggleAudio : function( btn, pressed, stream, audio ) {
+			},
+	
+			/**
+			 * Event handler that gets fired upon successful login from the user interface
+			 * 
+			 * @param {Object} event The Ext form event object responsible for the successful login
+			 * @return void
+			 */
+			onLogin : function( event ) {
+	
+				DopeMC.user.username = event.result.username;
+				DopeMC.user.password = Ext.get( 'Password' ).getValue();
+			 	DopeMC.user.role = event.result.role;
+	
+				DopeMC.setLoggedIn( true );
+	
+			    DopeMC.ui.destroyLogin();
+			 	DopeMC.ui.battleroom.load();
+	
+				//DopeMC.ui.initPlaylists();
+				//DopeMC.ui.initRecordings();
+				//DopeMC.ui.initSettings();
+			},
+	
+			showLoading : function() {
+	
+				Ext.get( 'loading' ).show();
+			},
+	
+			removeLoading : function() {
+	
+				Ext.get( 'loading' ).remove();
+				Ext.get( 'loading-mask' ).fadeOut({
+					remove:true
+				});
+			},
+	
+			copyrightClick: function() {
+	
+				var url = "http://www.makeabyte.com"; 
+				var req = new air.URLRequest( url ); 
+	
+				air.navigateToURL( req );
+			},
+
+			getWindowCopyright : function() {
+
+				//return '<div class="windowCopyright">Copyright (c) 2009 <a href="DopeMC.ui.copyrightClick()">Make A Byte, inc</a></div>'
+				return '<div class="windowCopyright">Copyright (c) 2009 Make A Byte, inc</div>'
+			},
+	
+			/**
+			 * Displays a login window for the user to authenticate against
+			 * the dopemc.com website database.
+			 *  
+			 * @return void
+			 */
+			showLogin: function() {
+	
+					var formMarkup = '<div class="instructions">Enter your DopeMC.com username and password and click the login button to start battling!</div>';
+					var windowMarkup = DopeMC.ui.getWindowCopyright();
+	
+					var login = new Ext.FormPanel({
+	
+							labelWidth: 80,
+							url: 'http://beta.dopemc.com/index.php/AIRController/login',
+							baseCls: 'x-plain',
+							width: 475,
+							height: 100,
+							defaultType: 'textfield',
+							monitorValid: true,
+							html: formMarkup,
+							items: [{
+			                    xtype:'fieldset',
+			                    title: 'Credentials',
+			                    defaults: {width: 272},
+			                    defaultType: 'textfield',
+			                    height: 73,
+			                    collapsible: true,
+			                    style: {
+			                    	position: 'absolute',
+			                    	marginTop: '80px',
+			                		marginLeft: '40px'
+			                    },
+			                    items: [{
+			                    	id: 'Username',
+			                    	name: 'username',
+									value: 'mc2test',
+			                        fieldLabel: 'Username',
+									allowBlank: false
+			                    }, {
+			                    	id: 'Password',
+			                    	name: 'password',
+									value: 'test',
+			                        fieldLabel: 'Password',
+			                        inputType: 'password',
+									allowBlank: false
+			                    }]
+			                }]
+					});
+	
+					var loginWin = new Ext.Window({
+	
+					    id: 'login-window',
+		                applyTo: 'login-window',
+						title: 'DopeMC Login',
+		                width: 500,
+		                height: 300,
+		                resizable: false,
+						closable: false,
+						draggable: false,
+		                plain: false,
+						iconCls: 'mic',
+						html: windowMarkup,
+		                items: [login],
+		                buttons: [{
+		                    text: 'Login',
+							handler: function() {
+	
+									if( !Ext.get( 'Username' ).getValue() ) {
+	
+										DopeMC.ui.error( 'Username required!' );
+										return false;
+									}								
+									if( !Ext.get( 'Password' ).getValue() ) {
+	
+										DopeMC.ui.error( 'Password required!' );
+										return false;
+									}
+	
+									login.getForm().submit({
+	
+										method: 'POST',
+										waitTitle: 'Authenticating',
+										waitMsg: 'Rappin wit the server...',
+										success: function( btn, event ) {
+	
+											 DopeMC.ui.onLogin( event );
+										},
+										failure: function( form, action ) {
+	
+											 var response = Ext.util.JSON.decode( action.response.responseText );
+	
+											 if( !response ) {
+	
+												 Ext.MessageBox.show({
+				             			           title: 'Error',
+				             			           msg: 'Null response from server',
+				             			           buttons: Ext.MessageBox.OK,
+				             			           icon: Ext.MessageBox.ERROR
+					             			     });
+											 }
+											 else if( response.success == false ) {
+	
+												 Ext.MessageBox.show({
+				             			           title: 'Login Error',
+				             			           msg: response.errors.reason,
+				             			           buttons: Ext.MessageBox.OK,
+				             			           icon: Ext.MessageBox.ERROR
+					             			     });
+											 }
+											 login.getForm().reset();
+										}
+									});
+								}
+		                	}, {
+		                    	text: 'Exit',
+		                    	handler: function() {
+			                		DopeMC.exit();
+		               		}
+		                }]
+	            });
+				loginWin.show();
+			},
+	
+			/**
+			 * Destroys all UI components involved in login process
+			 * 
+			 * @return void
+			 */
+			destroyLogin : function() {
+	
+				var loginWin = Ext.getCmp( 'login-window' );
+	
+				if( loginWin ) loginWin.destroy();
+			},
+	
+			/**
+			 * Performs application cleanup on exit.
+			 * 
+			 * 1.) Kills AgilePHP session on web server.
+			 * 
+			 * @return void
+			 */
+			logout : function() {
+	
+				//if( !DopeMC.isLoggedIn() )
+					//return;
+	
+				var request = new air.URLRequest( "http://beta.dopemc.com/index.php/LoginController/logout" );
+	
+				var loader = new air.URLLoader();
+				loader.addEventListener( air.Event.COMPLETE, function( event ) {
+	
+				 		//var response = Ext.util.JSON.decode( event.target.data );
+				 		DopeMC.debug( event );
+				 });
+	
+				 try {
+					 loader.load( request );
+				 }
+				 catch( error ) {
+	
+					 air.trace( 'error loading url: ' + error );
+				 }
+			},
+	
+			battleroom : {
+	
+				/**
+				 * Loads the main user interface of the DopeMC AIR application
+				 * 
+				 * @return void
+				 */
+		
+				load : function( user ) {
+		
+					var viewport = new Ext.Viewport({
+							id: 'battleroom-viewport',
+							layout: 'border',
+							items: [{
+								region: "north",
+								xtype: 'panel',
+								baseCls: 'x-plain',
+								title: '<div id="logo"><img src="icons/logo-small-blue.jpg"></div>',
+							}, {
+								region: 'west',
+								id: 'west-panel',
+								title: 'My DopeMC',
+								split: true,
+								width: 200,
+								minSize: 175,
+								maxSize: 400,
+								collapsible: true,
+								margins: '5 0 5 5',
+								cmargins: '5 0 5 5',
+								layout: 'accordion',
+								layoutConfig: {
+									animate: true
+								},
+								items: [{
+									id: 'playlistsMenu',
+									title: 'Play Lists',
+									autoScroll: true,
+									border: false,
+									iconCls: 'playlists'
+								}, {
+									id: 'battleroomsMenu',
+									title: 'Battle Rooms',
+									autoScroll: true,
+									border: false,
+									iconCls: 'battleroom'
+								}, {
+									id: 'recordingsMenu',
+									title: 'Recordings',
+									autoScroll: true,
+									border: false,
+									iconCls: 'record'
+								}, {
+									id: 'settingsMenu',
+									title: 'Settings',
+									border: false,
+									autoScroll: true,
+									iconCls: 'settings'
+								}]
+							}, {
+								id: 'centerPanel',
+								region: 'center',
+								margins: '5 5 5 0',
+								layout: 'column',
+								autoScroll: true,
+								items: [{
+									id: 'mcPanel',
+									columnWidth: .33,
+									baseCls: 'x-plain',
+									bodyStyle: 'padding: 5px 0 5px 5px',
+									items: [{
+										id: 'mcVideo',
+										xtype: 'panel',
+										title: 'MC',
+										height: 225
+									}, new Ext.Toolbar({
+										items: [{
+											xtype: 'tbtext',
+											text: 'Video',
+											style: {
+												paddingRight: '35px'
+											}
+										}, {
+											id: 'mcBtnCam',
+											xtype: 'tbbutton',
+											iconCls: 'cam',
+											iconAlign: 'left',
+											enableToggle: true,
+											allowDepress: true,
+											tooltip: '<b>Watch live video</b>',
+											pressed: (DopeMC.user.subscription != 'free'),
+											disabled: (DopeMC.user.subscription == 'free'),
+											toggleHandler: function( btn, pressed ) {
+
+												if( pressed ) {
+
+													for( var i = 0; i < DopeMC.participants.length; i++ ) {
+
+														 // This is the local user wanting to broadcast their video
+														 if( DopeMC.participants[i].role == 'MC' && 
+														 		DopeMC.participants[i].username == DopeMC.user.username &&
+																DopeMC.user.isBroadcasting )
+															 DopeMC.participants[i].stream.attachCamera( DopeMC.participants[i].cam );
+
+														 // This is a local user wanting to watch remote broadcaster
+														 else if( DopeMC.participants[i].role == 'MC' )
+													   	 	  DopeMC.participants[i].stream.receiveVideo( true );
+													}
+												}
+												else {
+
+													for( var i=0; i<DopeMC.participants.length; i++ ) {
+
+														 // If the user is broadcasting, stop capturing video
+														 if( DopeMC.participants[i].role == 'MC' && 
+														 		DopeMC.participants[i].username == DopeMC.user.username &&
+																DopeMC.user.isBroadcasting ) {
+
+															 DopeMC.participants[i].stream.publish( false );
+															 DopeMC.participants[i].stream.attachCamera( false );
+														 }
+
+														 // This is a local user not wanting to watch remote broadcaster
+														 else if( DopeMC.participants[i].role == 'MC' ) {
+
+															 DopeMC.participants[i].stream.receiveVideo( false );
+															 DopeMC.participants[i].video.clear();
+														 }
+													}
+												}
+											}
+										}, {
+											id: 'mcBtnMic',
+											xtype: 'tbbutton',
+											iconCls: 'mic',
+											iconAlign: 'left',
+											enableToggle: true,
+											allowDepress: true,
+											pressed: true,
+											tooltip: '<b>Listen to live audio</b>',
+											toggleHandler: function( btn, pressed ){
+
+												if( pressed ) {
+
+													for( var i = 0; i < DopeMC.participants.length; i++ ) {
+													
+														// This is the local user wanting to broadcast their audio
+														if( DopeMC.participants[i].role == 'MC' && 
+																DopeMC.participants[i].username == DopeMC.user.username &&
+																DopeMC.user.isBroadcasting )
+																Ext.getCmp( 'mcSlider' ).setValue( 50 );
+
+														// This is a local user wanting to receive broadcasters audio
+														else if( DopeMC.participants[i].role == 'MC' )
+													   	 	 DopeMC.participants[i].stream.receiveAudio( true );
+													}
+												}
+												else {
+
+													for( var i = 0; i < DopeMC.participants.length; i++ ) {
+
+														// This is the local user not wanting to broadcast their audio
+														if( DopeMC.participants[i].role == 'MC' && 
+																DopeMC.participants[i].username == DopeMC.user.username &&
+																DopeMC.user.isBroadcasting )
+																Ext.getCmp( 'mcSlider' ).setValue( 0 );
+
+														// This is a local user not wanting to receive broadcasters audio
+														else if( DopeMC.participants[i].role == 'MC' )
+													   	 	 DopeMC.participants[i].stream.receiveAudio( false );
+													}
+												}
+											}
+										}, {
+											id: 'mcBtnRecord',
+											xtype: 'tbbutton',
+											iconCls: 'record',
+											iconAlign: 'left',
+											enableToggle: true,
+											allowDepress: true,
+											tooltip: '<b>Record live stream</b>',
+											disabled: ((DopeMC.user.subscription == 'free') || (!DopeMC.user.isBattling || DopeMC.user.role != 'MC')),
+											toggleHandler: function( btn, pressed ){
+
+												if( pressed ) {
+
+													for( var i = 0; i < DopeMC.participants.length; i++ )
+														 if( DopeMC.participants[i].role == 'MC' )
+													   	 	 DopeMC.participants[i].broadcast( true );
+												}
+												else {
+
+													for( var i=0; i<DopeMC.participants.length; i++ ) {
+
+														 if( DopeMC.participants[i].role == 'MC' )
+															 DopeMC.participants[i].broadcast( false );
+													}
+												}
+											}
+										}, '->', new Ext.Slider({
+	
+												id: 'mcSlider',
+										        width: 100,
+										        minValue: 0,
+										        maxValue: 75,
+												value: 50,
+												disabled: (DopeMC.user.isBattling == false && DopeMC.user.role == 'MC'),
+												style: {
+													marginRight: 10
+												}
+										})]
+									})]
+								}, {
+									id: 'djPanel',
+									columnWidth: .33,
+									baseCls: 'x-plain',
+									bodyStyle: 'padding:5px 0 5px 5px',
+									items: [{
+										id: 'djVideo',
+										title: 'DJ',
+										height: 225
+									}, new Ext.Toolbar({
+										items: [{
+											xtype: 'tbtext',
+											text: 'Controls',
+											style: {
+												paddingRight: '35px'
+											}
+										}, {
+											id: 'djBtnCam',
+											xtype: 'tbbutton',
+											iconCls: 'cam',
+											iconAlign: 'left',
+											enableToggle: true,
+											allowDepress: true,
+											tooltip: '<b>Watch live video</b>',
+											pressed: (DopeMC.user.subscription != 'free'),
+											disabled: (DopeMC.user.subscription == 'free'),
+											toggleHandler: function( btn, pressed ) {
+
+												if( pressed ) {
+
+													for( var i = 0; i < DopeMC.participants.length; i++ )
+														 if( DopeMC.participants[i].role == 'DJ' )
+													   	 	 DopeMC.participants[i].stream.receiveVideo( true );
+												}
+												else {
+
+													for( var i=0; i<DopeMC.participants.length; i++ ) {
+
+														 if( DopeMC.participants[i].role == 'DJ' ) {
+
+															 DopeMC.participants[i].stream.receiveVideo( false );
+															 DopeMC.participants[i].video.clear();
+														 }
+													}
+												}
+											}
+										}, {
+											id: 'djBtnMic',
+											xtype: 'tbbutton',
+											iconCls: 'mic',
+											iconAlign: 'left',
+											enableToggle: true,
+											allowDepress: true,
+											pressed: true,
+											tooltip: '<b>Listen to live audio</b>',
+											toggleHandler: function( btn, pressed ){
+
+												if( pressed ) {
+
+													for( var i = 0; i < DopeMC.participants.length; i++ )
+														 if( DopeMC.participants[i].role == 'DJ' )
+													   	 	 DopeMC.participants[i].stream.receiveAudio( true );
+												}
+												else {
+
+													for( var i=0; i<DopeMC.participants.length; i++ ) {
+
+														 if( DopeMC.participants[i].role == 'DJ' )
+															 DopeMC.participants[i].stream.receiveAudio( false );
+													}
+												}
+											}
+										}, {
+											id: 'djBtnRecord',
+											xtype: 'tbbutton',
+											iconCls: 'record',
+											iconAlign: 'left',
+											enableToggle: true,
+											allowDepress: true,
+											tooltip: '<b>Record live stream</b>',
+											disabled: ((DopeMC.user.subscription == 'free') || (!DopeMC.user.isBattling || DopeMC.user.role != 'DJ')),
+											toggleHandler: function( btn, pressed ){
+
+												if( pressed ) {
+
+													for( var i = 0; i < DopeMC.participants.length; i++ )
+														 if( DopeMC.participants[i].role == 'DJ' )
+													   	 	 DopeMC.participants[i].broadcast( true );
+												}
+												else {
+
+													for( var i=0; i<DopeMC.participants.length; i++ ) {
+
+														 if( DopeMC.participants[i].role == 'DJ' )
+															 DopeMC.participants[i].broadcast( false );
+													}
+												}
+											}
+										}, '->', new Ext.Slider({
+	
+												id: 'djSlider',
+										        width: 100,
+										        minValue: 0,
+										        maxValue: 75,
+												value: 50,
+												disabled: (!DopeMC.user.isBattling && DopeMC.user.role == 'MC'),
+												style: {
+													marginRight: 10
+												}
+										})]
+									})]
+								}, {
+									id: 'infoPanel',
+									columnWidth: .33,
+									baseCls: 'x-plain',
+									bodyStyle: 'padding: 5px',
+									items: [{
+										id: 'infoContent',
+										title: 'Battle Details',
+										items: [{
+										  	id: 'panelDetails',
+										  	xtype: 'box',
+										  	autoEl: {cn: '<div class="battleroomInfoPanel" id="battleroomStatus"></div>' +
+														 '<div class="battleRoomInfoPanel" id="battleroomQueueCount"></div>' +
+														 '<div class="battleRoomInfoPanel" id="battleroomRoundCount"></div>' +
+														 '<div class="battleRoomInfoPanel" id="battleroomVotes"></div>'
+											}
+										}],
+										height: 258
+									}]
+								}]
+							}, {
+								region: 'south',
+								id: 'south-panel',
+								title: 'Chat',
+								tbar: new Ext.Toolbar({
+									items: [{
+										 id: 'txtChatMessage',
+										 xtype: 'textfield',
+										 width: 200,
+									}, {
+										 text: 'Send',
+										 handler: function() { 
+
+												if( !DopeMC.connection ) {
+
+													DopeMC.ui.error( 'You must be connected to a room before sending a chat message!' );
+													return false;
+												}
+
+												if( !Ext.getCmp( 'txtChatMessage' ).getValue() ) {
+
+													DopeMC.ui.error( 'A chat message is required to send!' );
+													return false;
+												}
+
+												var chatMessage = Ext.getCmp( 'txtChatMessage' );
+												DopeMC.connection.call( 'sendChatMessage', null, chatMessage.getValue(), DopeMC.user.chatColor );
+												chatMessage.reset();
+										 }
+									}, {
+										id: 'btnColorSwatch',
+										xtype: 'button',
+										iconCls: 'swatch',
+										handler: function() {
+	
+											colorPaletteWin.show();
+										}
+									}]
+								}),
+								layout: 'fit',
+								collapsible: true,
+								height: 200,
+								split: true,
+								minSize: 175,
+								margins: {
+								    top: 5,
+								    right: 5,
+								    bottom: 5,
+								    left: 5
+								},
+								layoutConfig: {
+									animate: true
+								},
+								items: [{
+									id: 'ext-chat-window',
+									xtype: 'panel',
+									html: '<div id="chat-window"></div>',
+									autoScroll: true
+								}]
+							}]
+						});
+
+						// Panel events that trigger resizing
+						Ext.getCmp( 'west-panel' ).on( 'collapse', function() {
+							DopeMC.ui.onResize();
+						});
+						Ext.getCmp( 'west-panel' ).on( 'expand', function() {
+							DopeMC.ui.onResize();
+						});
+						Ext.getCmp( 'west-panel' ).on( 'resize', function() {
+							DopeMC.ui.onResize();
+						});
+
+						// Event handler for MC and DJ gain/volume slider bar
+						Ext.getCmp( 'mcSlider' ).on( 'changecomplete', function( e ) {
+
+								if( DopeMC.user.isBattling && DopeMC.user.role == 'MC' ) {
+
+									var p = DopeMC.getParticipant( DopeMC.user.username );
+									if( p && p.mic )
+										p.mic.gain = e.value;
+								}
+						});
+						Ext.getCmp( 'djSlider' ).on( 'changecomplete', function( e ) {
+
+								if( DopeMC.user.isBattling && DopeMC.user.role == 'DJ' ) {
+
+									var p = DopeMC.getParticipant( DopeMC.user.username );
+									if( p && p.mic )
+										p.mic.gain = e.value;
+								}
+						});
+
+						// Load battleroom accordian menu room list
+						var battlerooms = Ext.getCmp( 'battleroomsMenu' );
+						var store = new Ext.data.JsonStore({
+		
+							url: DopeMC.webURI + 'getBattlerooms/',
+							fields: [
+								{name: 'roomName' },
+								{name: 'roomCount' }
+							]
+						});
+					    store.load();
+
+					    var grid = new Ext.grid.GridPanel({
+		
+					    	id: 'battlerooms-ext-grid',
+							autoHeight: true,
+							autoWidth: true,
+					        store: store,
+					        columns: [
+					            {id: 'battleroom-name', header: 'Name', width: 120, sortable: true, dataIndex: 'roomName'},
+					            {id: 'battleroom-totalUsers', header: 'Participants', width: 75, sortable: true, dataIndex: 'roomCount' }
+					        ],
+					        stripeRows: true,
+					        stateId: 'grid' ,
+					        listeners: {
+					    		rowdblclick: function( grid, rowIndex, e ) {
+		
+									if( DopeMC.roomSO && DopeMC.roomSO.data.roomName == grid.getStore().getAt(rowIndex).data.roomName ) {
+		
+										// Dont let users log into the same room more than once
+										DopeMC.ui.error('Your already logged into ' + DopeMC.roomSO.data.roomName + '!' );
+										return false;
+									}
+									DopeMC.connect( grid.getStore().getAt( rowIndex ).data.roomName );
+					    		},
+					    		rowcontextmenu: function( grid, rowIndex, e ) {
+
+									var ctxMenu = new Ext.menu.Menu({
+	
+											bodyCfg: {
+												cls: 'bringToFront'
+											},
+									        items: [{
+									                id: 'battlerooms-context-connect',
+									                text: 'Connect',
+									                iconCls: 'internet'
+									            }, {
+									            	id: 'battlerooms-context-battle',
+									                text: 'Battle',
+									                iconCls: 'queue'
+									            }, {
+									            	id: 'battlerooms-context-refresh',
+									                text: 'Refresh',
+									                iconCls: 'refresh'
+									            }, {
+									            	id: 'battlerooms-context-disconnect',
+									                text: 'Disconnect',
+									                iconCls: 'exit'
+									            }
+										    ],
+									        listeners: {
+	
+									            itemclick: function( item ) {
+	
+									                switch( item.id ) {
+	
+									                    case 'battlerooms-context-connect':
+															  DopeMC.connect( grid.getStore().getAt( rowIndex ).data.roomName );
+								                        break;
+	
+														case 'battlerooms-context-battle':
+															  var p = new DopeMC.Participant( DopeMC.user.username, DopeMC.user.role );
+															  	  p.enterBattle();
+														break;
+	
+													    case 'battlerooms-context-refresh':
+															 Ext.getCmp( 'battlerooms-ext-grid' ).getStore().reload();
+															 
+								                        break;
+	
+									                    case 'battlerooms-context-disconnect':
+	
+														      DopeMC.disconnect();
+															  DopeMC.roomSO.close();
+									                    break;
+									                }
+									            }
+									        }
+										});
+		
+									// Enable/disable context menu buttons according to application state							
+									if( DopeMC.roomSO && DopeMC.roomSO.data.roomName == grid.getStore().getAt( rowIndex ).data.roomName ) {
+
+										// Users is connected to the room that was selected
+										var btnConnect = Ext.getCmp( 'battlerooms-context-connect' );
+											btnConnect.addClass( 'btn-greyed' );
+											btnConnect.disable();
+		
+										var btnDisconnect = Ext.getCmp( 'battlerooms-context-disconnect' );
+											btnDisconnect.removeClass( 'btn-greyed' );
+											btnDisconnect.enable();
+	
+										var btnBattle = Ext.getCmp('battlerooms-context-battle');
+										if( DopeMC.user.isBattling == true ) {
+	
+											btnBattle.addClass('btn-greyed');
+											btnBattle.disable();
+										}
+										else {
+	
+											btnBattle.removeClass('btn-greyed');
+											btnBattle.enable();
+										}
+									}
+									else if( !DopeMC.roomSO || DopeMC.roomSO.data.roomName != grid.getStore().getAt( rowIndex ).data.roomName ) {
+	
+										// Not connected to a room's SharedObject or the selected row is not the room the user is connected to.
+										var btnConnect = Ext.getCmp( 'battlerooms-context-connect' );
+											btnConnect.removeClass( 'btn-greyed' );
+											btnConnect.enable();
+		
+										var btnDisconnect = Ext.getCmp( 'battlerooms-context-disconnect' );
+											btnDisconnect.addClass( 'btn-greyed' );
+											btnDisconnect.disable();
+	
+										var btnBattle = Ext.getCmp( 'battlerooms-context-battle' );
+											btnBattle.addClass( 'btn-greyed' );
+											btnBattle.disable();
+									}
+					    			ctxMenu.showAt( e.getXY() );
+					            }
+					    	}
+					    });
+						battlerooms.add( grid );
+					},
+
+					vote: function() {
+
+						  for( var i = 0; i < DopeMC.participants.length; i++ ) {
+
+							  	var participant = DopeMC.participants[i];
+
+							  	votingWin.add({
+
+							  		id: 'ext-participant-' + participant.getUsername(),
+							  		xtype: 'panel',
+							  		title: participant.role + ' ' + participant.getUsername(),
+							  		html: '<img width="135" height="100" src="avatars/' + participant.getAvatar() + '.png">',
+							  		width: 125,
+							  		columnWidth: .50,
+							  		columnHeight: 100,
+							  		style: {
+							  			paddingTop: 5,
+							  			paddingLeft: 5,
+							  			paddingBottom: 5,
+							  			paddingRight: 5
+							  		},
+							  		participant: DopeMC.participants[i],
+							  		listeners: {
+	
+							  			render: function( c ) {
+	
+							  				c.body.on( 'click', function( e ) {
+	
+							  					var imgApply = '<img src="icons/apply-xl.png" height="100" width="135">';
+							  					var pImg = '<img width="135" height="100" src="avatars/' + c.participant.getAvatar() + '.png">';
+
+												// Allow only one participant per role to be selected
+												for( var i=0; i<DopeMC.participants.length; i++ ) {
+
+													 var p = DopeMC.participants[i];
+													 var panel = Ext.getCmp( 'ext-participant-' + p.getUsername() );
+
+													 if( p.role == c.participant.role && panel.participant.hasVote === true &&
+														 	 panel.participant.username != c.participant.username ) {
+
+													 	 panel.body.dom.innerHTML = '<img width="135" height="100" src="avatars/' + panel.participant.getAvatar() + '.png">';
+														 panel.participant.hasVote = false;
+													}
+												}
+
+												// Choose selected avatar / participant
+							  					if( c.body.dom.innerHTML == pImg ) {
+
+													c.body.dom.innerHTML = imgApply;
+													c.participant.hasVote = true;
+												}
+												else {
+
+													c.body.dom.innerHTML = pImg;
+													c.participant.hasVote = false;
+												}
+							  				})
+							  			}
+							  		},
+							  		scope: this
+							  	});
+						  }
+						  votingWin.show();
+					},
+
+					setVideo: function( role, video ) {
+
+						if( role && video ) {
+
+							var extVideoPanel = Ext.get( role.toLowerCase() + 'Video' );
+							var box = extVideoPanel.getBox();
+
+							video.x = box.x + 1;
+							video.y = box.y + 27;
+							video.width = box.width;
+							video.height = box.height - 26;
+						}
+					},
+
+					hideVideo: function( video ) {
+
+						if( video ) {
+
+							video.x = -100;
+							video.y = -100;
+						}
+						else
+							air.trace( 'hideVideo: video is null' );
+					},
+	
+					setPanelTitle: function( role, username ) {
+	
+						var id = role.toLowerCase() + 'Video';
+						var panel = Ext.getCmp( id );
+							panel.setTitle( role + ' ' + username );
+					},
+
+					setAvatar : function( role, avatar ) {
+	
+						var id = role.toLowerCase() + 'Video';
+						var videoPanel = Ext.getCmp( id );
+							videoPanel.body.dom.innerHTML = '<img src="avatars/' + avatar + '.png" width="' + videoPanel.getInnerWidth() + '" height="' + videoPanel.getInnerHeight() + '">';
+					},
+
+					addRoom : function( item ) {
+
+						var battlerooms = Ext.getCmp( 'battlerooms' );
+							battlerooms.add( item );
+					},
+
+					updateRoomCount: function() {
+
+						  var grid = Ext.getCmp( 'battlerooms-ext-grid' );
+						  var store = grid.getStore();
+
+						  for( var i=0; i<store.getCount(); i++ ) {
+
+							   var record = store.getAt( i );
+							   if( record.data.roomName == DopeMC.roomSO.data.roomName ) {
+
+								   record.data.roomCount = DopeMC.roomSO.data.roomCount;
+								   record.commit();
+							   }
+						  }
+					},
+
+					addChatMessage: function( message ) {
+
+						var chatPanel = document.getElementById( 'chat-window' );
+							chatPanel.innerHTML += message + '<br>';
+
+						var win = Ext.getCmp( 'ext-chat-window' );
+						win.body.dom.scrollTop = win.body.dom.scrollHeight;
+					},
+
+					refreshRooms : function() {
+
+						Ext.getCmp( 'battlerooms-ext-grid' ).getStore().reload();
+					}
+			},
+	
+			initPlaylists : function( node ) {
+	
+				var playlists = Ext.getCmp( 'playlistsMenu' );
+	
+			    var tree = new Ext.tree.TreePanel({
+					id: 'playlist-tree',
+			        useArrows: true,
+			        autoScroll: true,
+			        animate: true,
+			        enableDD: true,
+			        containerScroll: true,
+			        border: false,
+			        // auto create TreeLoader
+			        // dataUrl: DopeMC.webURI + 'getPlaylists',
+			        root: {
+			            nodeType: 'async',
+			            text: 'DopeMC',
+			            draggable: false,
+			            id: 'root'
+			        }
+			    });
+	
+				playlists.add( tree );
+				playlists.doLayout();
+			},
+	
+			addToPlaylist : function( item ) {
+	
+				var tree = Ext.getCmp( 'playlist-tree' );
+					tree.add( item );
+			},
+	
+			initRecordings : function() {
+	
+				var recordings = Ext.getCmp( 'recordingsMenu' );
+	
+				var tree = new Ext.tree.TreePanel({
+			        useArrows: true,
+			        autoScroll: true,
+			        animate: true,
+			        enableDD: true,
+			        containerScroll: true,
+			        border: false,
+			        // auto create TreeLoader
+			        //dataUrl: 'get-nodes.php',
+			        root: {
+			            nodeType: 'async',
+			            text: 'DopeMC',
+			            draggable: false,
+			            id: 'root'
+			        }
+			    });
+			},
+	
+			addToRecordings : function( item ) {
+	
+				var recordings = Ext.getCmp( 'recordingsMenu' );
+	
+				
+			},
+	
+			initSettings : function() {
+	
+				var partnerType;
+	
+				if( DopeMC.user.role == 'MC' )
+					partnerType = '"DJ"';
+	
+				else if( DopeMC.user.role == 'DJ' )
+					partnerType = '"MC"';
+	
+				var propGrid = new Ext.grid.PropertyGrid({
+					id: 'settings-grid',
+					autoWidth: true,
+					minColumnWidth: 75,
+					autoExpandColumn: 'Username',
+	                source: {
+	
+	                    "Username": DopeMC.user.username,
+	                    "Role": DopeMC.user.role,
+						partnerType : '(..)'
+	
+						/*
+	                    "autoFitColumns": true,
+	                    "productionQuality": false,
+	                    "created": new Date(Date.parse('10/15/2006')),
+	                    "tested": false,
+	                    "version": 0.01,
+	                    "borderWidth": 1
+	                    */
+	                }
+	            });
+				propGrid.on( 'beforeedit', function( o ) {
+	
+					if( o.record.data.name == 'Username' || o.record.data.name == 'Role' )
+						o.cancel = true;
+				});
+	
+				var settings = Ext.getCmp( 'settingsMenu' );
+				settings.add( propGrid );
+				settings.doLayout();
+	
+				propGrid.doLayout();
+			},
+	
+			startRecording : function( streamName ) {
+	
+				var filename = DopeMC.getTimestamp() + '.avi';
+	
+				//var file = air.File.applicationStorageDirectory; 
+					//file = file.resolvePath( streamName );
+	
+					var curVidFile = File.createTempFile();
+					myWriter.createFile(curVidFile, 360,320, 10);
+					recordInterval = setInterval(recordVid, 100);
+			}
+	};
+
+});
+/*
+window.onresize = function() {
+
+		DopeMC.ui.onResize();
+};
+*/

@@ -1,0 +1,44 @@
+<html>
+	<head>
+        <title>Application Sandbox sample</title>
+
+		<link href="sample.css" rel="stylesheet" type="text/css"/>
+		<link href="lib/ext/resources/css/ext-all.css" rel="stylesheet" type="text/css"/>
+
+        <script type="text/javascript" src="lib/air/AIRAliases.js"></script>
+        <script type="text/javascript" src="lib/air/AIRMenuBuilder.js"></script>
+
+		<script type="text/javascript" src="lib/ext/adapter/ext/ext-base.js"></script>
+		<script type="text/javascript" src="lib/ext/ext-all.js"></script>
+		<script type="text/javascript" src="lib/ext/air/ext-air.js"></script>
+
+
+<script type="text/javascript">
+	Ext.onReady(function() {
+  var tabpanel = new Ext.TabPanel({
+    renderTo: document.body,
+    activeTab: 0,
+    items: [{
+      title: 'Tab 1',
+      html: 'Content 1'
+    }, {
+      title: 'Tab 2',
+      html: 'Content 2'
+    }]
+  });
+});
+</script>
+
+<!--
+		<script type="text/javascript" src="dopemc.js"></script>
+		<script type="text/javascript" src="dopemc-ui.js"></script>
+	-->	
+		
+		
+	</head>
+    <body>
+		<!-- http://www.adobe.com/go/learn_air_html -->
+		<!-- <div id="vBattleRoom" style="width: 100%; height: 100%">Test</div> -->
+		
+    </body>
+</html>

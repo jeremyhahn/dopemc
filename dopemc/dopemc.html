@@ -1,0 +1,35 @@
+<!-- http://www.adobe.com/go/learn_air_html -->
+<html>
+	<head>
+        <title>DopeMC Battle Booth (ALPHA)</title>
+
+		<link type="text/css" rel="stylesheet" href="lib/ext/resources/css/ext-all.css"/>
+		<link type="text/css" rel="stylesheet" href="dopemc.css"/>
+
+        <script type="text/javascript" src="lib/air/AIRAliases.js"></script>
+        <script type="text/javascript" src="lib/air/AIRMenuBuilder.js"></script>
+		<script type="text/javascript" src="lib/air/AIRIntrospector.js"></script>
+
+		<script type="text/javascript" src="lib/ext/adapter/ext/ext-base.js"></script>
+		<script type="text/javascript" src="lib/ext/ext-all.js"></script>
+		<script type="text/javascript" src="lib/ext/air/ext-air.js"></script>
+
+		<script type="text/javascript" src="js/dopemc.js"></script>
+		<script type="text/javascript" src="js/dopemc-ui.js"></script>
+
+		<script type="text/javascript">
+
+			nativeWindow.x = (air.Capabilities.screenResolutionX - nativeWindow.width) / 2;
+			nativeWindow.y = (air.Capabilities.screenResolutionY - nativeWindow.height) / 2;
+
+			DopeMC.onReady( function() {
+				DopeMC.ui.showLogin();
+			});
+		</script>
+	</head>
+    <body>
+		<div id="login-window"></div>
+		<div id="color-palette"></div>
+		<div id="voting-window"></div>
+    </body>
+</html>

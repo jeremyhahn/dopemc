@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/dopemc_air/!svn/ver/2/trunk/lib/ext/air/src
+END
+NativeDD.js
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/dopemc_air/!svn/ver/2/trunk/lib/ext/air/src/NativeDD.js
+END
+NativeWindow.js
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/dopemc_air/!svn/ver/2/trunk/lib/ext/air/src/NativeWindow.js
+END
+SystemTray.js
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/dopemc_air/!svn/ver/2/trunk/lib/ext/air/src/SystemTray.js
+END
+ext-air-adapter.js
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/dopemc_air/!svn/ver/2/trunk/lib/ext/air/src/ext-air-adapter.js
+END
+Sound.js
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/dopemc_air/!svn/ver/2/trunk/lib/ext/air/src/Sound.js
+END
+SystemMenu.js
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/dopemc_air/!svn/ver/2/trunk/lib/ext/air/src/SystemMenu.js
+END
+FileProvider.js
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/dopemc_air/!svn/ver/2/trunk/lib/ext/air/src/FileProvider.js
+END
+NativeObservable.js
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/dopemc_air/!svn/ver/2/trunk/lib/ext/air/src/NativeObservable.js
+END
